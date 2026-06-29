@@ -1,0 +1,60 @@
+{
+  "assignment_id": "essay_01",
+  "title": "Argumentative Essay",
+  "topic": "Should schools ban smartphones in classrooms?",
+  "total_points": 16,
+  "criteria": [
+    {
+      "id": "thesis",
+      "name": "Thesis & Argument",
+      "description": "The clarity, specificity, and logical coherence of the central claim and the reasoning used to support it throughout the essay.",
+      "max_points": 4,
+      "levels": {
+        "0": "No identifiable thesis or central claim. The essay expresses no discernible position on the topic, or the position contradicts itself within the same paragraph.",
+        "1": "A thesis is implied but never explicitly stated. The argument is vague ('smartphones can be good or bad') and does not commit to a position. Reasoning is circular or purely anecdotal with no logical chain.",
+        "2": "A thesis is present and states a position, but it is overly broad or underdeveloped (e.g., 'Smartphones are bad for learning.'). The argument is partially developed but relies on logical fallacies or unsupported generalizations without follow-through.",
+        "3": "A clear, specific thesis is stated early and maintained throughout most of the essay. The argument is logically developed across multiple paragraphs with mostly sound reasoning. Minor lapses in logic or a weak counterargument acknowledgment.",
+        "4": "A precise, nuanced thesis that captures the complexity of the issue. The argument is fully developed, logically rigorous, and sustained throughout. Counterarguments are anticipated and thoughtfully refuted, demonstrating sophisticated reasoning."
+      }
+    },
+    {
+      "id": "evidence",
+      "name": "Evidence & Support",
+      "description": "The quality, relevance, and integration of evidence — including facts, statistics, studies, or examples — used to substantiate the argument.",
+      "max_points": 4,
+      "levels": {
+        "0": "No evidence is provided. The essay relies entirely on assertion. Claims are made with zero support, or any 'evidence' cited is fabricated and internally inconsistent.",
+        "1": "Evidence is present but weak: purely personal anecdote with no broader applicability, or a single vague reference (e.g., 'studies show') with no specifics. Evidence does not directly support the claim it is attached to.",
+        "2": "Some relevant evidence is used, but integration is poor. Evidence is 'dropped in' without analysis (a 'quote dump'). At least one piece of evidence is partially relevant, but the student fails to explain how it supports their argument.",
+        "3": "Multiple pieces of relevant evidence are used and correctly attributed (specific studies, named experts, or verifiable statistics). Each piece is connected to the argument, though analysis depth varies. One or two pieces may feel tangential.",
+        "4": "Evidence is compelling, specific, and well-integrated. Every claim is supported by relevant evidence that is correctly attributed and followed by analysis explaining its significance. Evidence from multiple types of sources (empirical, expert opinion, real-world example) is synthesized to build the argument."
+      }
+    },
+    {
+      "id": "organization",
+      "name": "Organization & Structure",
+      "description": "The logical flow of ideas, paragraph-level coherence, use of transitions, and overall essay architecture from introduction to conclusion.",
+      "max_points": 4,
+      "levels": {
+        "0": "No discernible structure. The essay is a single block of text or ideas appear in a completely random order with no paragraphing. The reader cannot follow the progression of thought.",
+        "1": "Basic paragraphing is attempted but ideas are significantly out of order. The introduction and conclusion are missing or indistinguishable from body paragraphs. Transitions are absent, making the essay feel like a list of unconnected statements.",
+        "2": "The essay has an identifiable introduction, body, and conclusion, but one section is substantially weaker than others. Transitions are formulaic ('Firstly... Secondly... In conclusion...') and do not create meaningful logical links between ideas.",
+        "3": "Clear and logical structure with a proper introduction (including hook and context), developed body paragraphs each focused on one idea, and a conclusion that restates the argument. Transitions are functional. Minor structural hiccups (e.g., one body paragraph that shifts topics mid-way).",
+        "4": "Excellent, purposeful structure that enhances the argument's persuasive force. Each paragraph begins with a strong topic sentence and ends with a bridge to the next idea. The introduction draws the reader in, body paragraphs build on each other cumulatively, and the conclusion offers synthesis rather than simple repetition."
+      }
+    },
+    {
+      "id": "mechanics",
+      "name": "Writing Mechanics",
+      "description": "Grammar, spelling, punctuation, sentence variety, word choice, and overall adherence to standard written English conventions.",
+      "max_points": 4,
+      "levels": {
+        "0": "Pervasive errors in grammar, spelling, and punctuation make the essay extremely difficult to read. Errors are so frequent they obscure meaning entirely. Sentence fragments and run-ons dominate the text.",
+        "1": "Frequent errors that repeatedly distract the reader and occasionally obscure meaning. Very limited vocabulary; the same simple words and sentence structures repeat throughout. Homophone errors (their/there/they're) appear more than once.",
+        "2": "Some consistent errors (comma splices, subject-verb agreement, or apostrophe misuse) that distract but do not obscure meaning. Vocabulary is adequate but predictable. Sentence structure is mostly uniform with little variation.",
+        "3": "Minor, infrequent errors that do not distract from reading. Vocabulary is appropriate and occasionally precise. A reasonable variety of sentence structures is used. The essay reads fluently.",
+        "4": "Essentially error-free. Vocabulary is precise, varied, and purposeful — word choices elevate the argument. Sentence structures are deliberately varied for rhythm and emphasis. The prose itself is a strength of the essay."
+      }
+    }
+  ]
+}
