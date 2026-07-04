@@ -140,3 +140,25 @@ A passing run evaluates the expected behavior for each agent correctly and outpu
 ![eval results](results/eval_run.png)
 
 These tests ensure the multi-agent grading pipeline is robust. Normal tests verify baseline accuracy and rubric alignment. The injection and auditor trap tests ensure security against manipulation and adversarial checks against AI-specific vulnerabilities like the halo effect.
+
+## Deployment Architecture
+
+```mermaid
+graph TD
+    A[User/Instructor] --> B[Cloud Run: Grading Agent]
+    B --> C[Cloud Run: MCP Gradebook Server]
+    C --> D[(Cloud Storage: Grade Store)]
+    B -.-> E[Cloud Trace: Audit Trail]
+    C -.-> E
+    C --> F[(Review Queue: Local JSON/Firestore)]
+```
+
+The MCP server is deployed as a separate Cloud Run service to enforce strict boundary isolation between the LLM grading agent and the grading database. This allows the backend data tools to scale independently based on throughput requirements. Furthermore, it creates a robust security boundary where a compromised agent cannot directly access or manipulate the underlying data layer.
+
+**Deploy Command:**
+```bash
+agents-cli scaffold enhance --deployment-target cloud_run
+```
+
+*Note: Cloud Trace provides per-student grading audit trails. Screenshot:*
+![Cloud Trace](docs/cloud_trace_screenshot.png)
