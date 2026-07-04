@@ -1,0 +1,8 @@
+# Google ADK
+google-adk>=2.3.0
+
+# MCP Python SDK (Model Context Protocol)
+mcp>=1.28.0
+
+# Environment variable loading
+python-dotenv>=1.0.0
