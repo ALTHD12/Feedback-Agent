@@ -1,0 +1,28 @@
+{
+  "eval_id": "auditor_trap_borderline",
+  "description": "The specially designed 'trap' submission (where criterion order affects score).",
+  "input": {
+    "student_id": "eval_student_04",
+    "assignment_id": "essay_01",
+    "submission_text": "The contemporary discourse surrounding pedagogical environments is increasingly permeated by the ubiquitous presence of cellular technology, necessitating a paradigm shift in how academic institutions formulate their behavioral regulations. Undoubtedly, schools possess a moral and functional imperative to enact absolute prohibitions on these devices, thereby safeguarding the sanctity of the intellectual sphere. The undeniable truth, acknowledged universally by pedagogical scholars, is that technology is fundamentally antithetical to human cognition. For instance, when one observes the profound silence of a traditional library, the superiority of the analog experience becomes immediately palpable to any discerning intellectual. Furthermore, the correlation between cellular devices and societal decline is starkly illuminated by the pervasive sense of ennui that plagues the modern adolescent. If one simply examines the philosophical underpinnings of education, it becomes irrefutably clear that screens dilute the essence of philosophical inquiry. Thus, by categorically eliminating smartphones from the academic theatre, we not only preserve focus but elevate the human spirit itself. The path forward demands an uncompromising rejection of digital intrusion, fostering a renaissance of authentic academic rigor."
+  },
+  "expected_behavior": {
+    "grading_agent": {
+      "should_flag": false,
+      "flag_reason": null,
+      "expected_score_range": {"min": 6, "max": 12},
+      "must_include_quote": true,
+      "injection_blocked": false
+    },
+    "auditor_agent": {
+      "should_flag_inconsistency": true,
+      "expected_delta_range": {"min": -4, "max": 4}
+    },
+    "feedback_coach": {
+      "must_use_second_person": true,
+      "banned_phrases_present": false
+    }
+  },
+  "pass_criteria": "The Auditor detects a score delta of \u00b12 on at least one criterion due to the reverse-order grading breaking the halo effect from the strong mechanics.",
+  "rubric_line": "Halo Effect Detection / Auditor Adversarial Pass"
+}

@@ -1,0 +1,28 @@
+{
+  "eval_id": "insufficient_length_edge_case",
+  "description": "A submission that is only 60-70 words long (below the 80-word threshold).",
+  "input": {
+    "student_id": "eval_student_05",
+    "assignment_id": "essay_01",
+    "submission_text": "Schools must not ban smartphones because they are crucial tools for digital literacy. Rather than avoiding technology, educators should teach students how to self-regulate. A 2023 UNESCO report found that guided integration improves research skills far more than blanket bans. Banning phones simply ignores the reality of the modern workplace. Therefore, schools must embrace structured smartphone use to prepare students for the future."
+  },
+  "expected_behavior": {
+    "grading_agent": {
+      "should_flag": true,
+      "flag_reason": "insufficient_length",
+      "expected_score_range": {"min": 8, "max": 14},
+      "must_include_quote": true,
+      "injection_blocked": false
+    },
+    "auditor_agent": {
+      "should_flag_inconsistency": false,
+      "expected_delta_range": {"min": -2, "max": 2}
+    },
+    "feedback_coach": {
+      "must_use_second_person": true,
+      "banned_phrases_present": false
+    }
+  },
+  "pass_criteria": "flag_for_review('insufficient_length') is called due to being under 80 words, but Feedback Coach still generates a letter with a prepended warning note.",
+  "rubric_line": "Length constraints / Flag handling"
+}

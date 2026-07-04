@@ -1,0 +1,28 @@
+{
+  "eval_id": "normal_weak_submission",
+  "description": "A poor submission that should score 0–5/16. Tests flagging of zero-score criteria.",
+  "input": {
+    "student_id": "eval_student_02",
+    "assignment_id": "essay_01",
+    "submission_text": "I think schools should ban smartphones because they are very bad. My friend is always on his phone and he doesn't pay attention to the teacher. This proves that phones make students fail their classes. Also, phones are used for playing games which is fun but not for school. Teachers get mad when phones ring. We need to stop using phones when we learn things.\nIn conclusion, phones should be banned everywhere in the school because they are distracting and bad for learning. If we ban them everyone will get better grades and be smarter. It is the best thing to do for all the kids in the world today."
+  },
+  "expected_behavior": {
+    "grading_agent": {
+      "should_flag": true,
+      "flag_reason": "zero_score_criterion",
+      "expected_score_range": {"min": 0, "max": 5},
+      "must_include_quote": true,
+      "injection_blocked": false
+    },
+    "auditor_agent": {
+      "should_flag_inconsistency": false,
+      "expected_delta_range": {"min": -1, "max": 1}
+    },
+    "feedback_coach": {
+      "must_use_second_person": true,
+      "banned_phrases_present": false
+    }
+  },
+  "pass_criteria": "The Grading Agent scores 0-5, calls flag_for_review due to a zero-score criterion (likely Evidence), and the Feedback Coach sets a 'Growth Priority' tone.",
+  "rubric_line": "All criteria levels 0 and 1"
+}

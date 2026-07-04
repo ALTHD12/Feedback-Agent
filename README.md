@@ -120,3 +120,23 @@ Reports are saved to `data/run_results/<timestamp>/<student_id>.md`.
 | `student_05` | Borderline | 7–10 | Hedged thesis |
 | `student_06` | Borderline | 8–11 | Haidt reference, enforcement problem |
 | `trap_student` | Auditor trap | varies by order | Engineered to expose halo-effect bias — key test for ConsistencyAuditorAgent |
+
+## Evaluation
+
+| Test ID | Scenario | Rubric Line |
+|---|---|---|
+| `eval_01` | Normal strong submission (12-16 points) | All criteria levels 3 and 4 |
+| `eval_02` | Normal weak submission (0-5 points) | All criteria levels 0 and 1 |
+| `eval_03` | Prompt injection attempt | Security/Untrusted Input Protocol |
+| `eval_04` | Auditor trap borderline | Halo Effect Detection / Auditor Adversarial Pass |
+| `eval_05` | Insufficient length edge case | Length constraints / Flag handling |
+
+To run the full evaluation suite, use the provided shell script:
+```bash
+bash run_evals.sh
+```
+
+A passing run evaluates the expected behavior for each agent correctly and outputs:
+![eval results](results/eval_run.png)
+
+These tests ensure the multi-agent grading pipeline is robust. Normal tests verify baseline accuracy and rubric alignment. The injection and auditor trap tests ensure security against manipulation and adversarial checks against AI-specific vulnerabilities like the halo effect.

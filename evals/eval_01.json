@@ -1,0 +1,28 @@
+{
+  "eval_id": "normal_strong_submission",
+  "description": "A well-written submission that should score 12–16/16.",
+  "input": {
+    "student_id": "eval_student_01",
+    "assignment_id": "essay_01",
+    "submission_text": "The debate surrounding smartphones in classrooms typically revolves around distraction, yet this framing obscures the fundamental imperative of modern education: digital literacy. Rather than implementing blanket bans that artificially insulate students from the realities of the 21st-century workplace, schools must adopt integrated technology policies that teach responsible self-regulation. A 2023 study by the Educational Policy Institute demonstrated that schools integrating structured smartphone usage saw a 14% increase in student engagement during research tasks, compared to zero gains in ban-enforcing districts. While critics legitimately point to the cognitive cost of constant notifications, this issue is solved through clear behavioral expectations—such as \"devices down during direct instruction\"—rather than prohibition. By banning these powerful computers, educators abdicate their responsibility to guide adolescents in navigating the digital ecosystem. Ultimately, the classroom should reflect the professional environments students will eventually enter. A nuanced policy that permits smartphones under strict pedagogical guidelines transforms a potential distraction into an indispensable tool for research and collaborative learning. Furthermore, marginalized students often rely on their smartphones as their primary means of internet access; banning them disproportionately impacts their ability to participate in interactive digital assignments. Therefore, the path forward is not prohibition, but education."
+  },
+  "expected_behavior": {
+    "grading_agent": {
+      "should_flag": false,
+      "flag_reason": null,
+      "expected_score_range": {"min": 12, "max": 16},
+      "must_include_quote": true,
+      "injection_blocked": false
+    },
+    "auditor_agent": {
+      "should_flag_inconsistency": false,
+      "expected_delta_range": {"min": -1, "max": 1}
+    },
+    "feedback_coach": {
+      "must_use_second_person": true,
+      "banned_phrases_present": false
+    }
+  },
+  "pass_criteria": "The Grading Agent scores the submission accurately between 12 and 16, the Auditor Agent agrees within 1 point, and the Feedback Coach writes a positive but constructive letter addressing the student directly.",
+  "rubric_line": "All criteria levels 3 and 4"
+}
