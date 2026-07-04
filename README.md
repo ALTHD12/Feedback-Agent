@@ -1,101 +1,122 @@
-# Feedback-Agent
+# Feedback-Agent v2
 
-A multi-agent academic assessment system built with **Google ADK** and a **real MCP server**.
+A multi-agent academic assessment system built with **Google ADK 2.3.0** and a **real MCP subprocess server**.
 
-## Architecture
+## Architecture — v2 (AgentTool Pattern)
 
 ```
-ADK Web UI  (http://localhost:8000)
+root_agent  (LlmAgent — Orchestrator)  ←── adk web → http://127.0.0.1:8000
   │
-  ├─ grading_agent   ──┐
-  ├─ feedback_coach  ──┤ MCPToolset (stdio subprocess)
-  └─ auditor_agent   ──┘
-                        │
-               mcp_gradebook_server.py
-               (separate Python process — real MCP stdio server)
+  ├── AgentTool(grading_agent)          → GradeOutput (Pydantic, output_schema)
+  ├── AgentTool(feedback_coach)         → feedback letter (plain text)
+  ├── AgentTool(consistency_auditor)    → AuditResult (Pydantic, output_schema)
+  └── MCPToolset (flag_for_review)      → called if inconsistency_detected=True
+
+                     ↕ stdio subprocess (real MCP wire protocol)
+
+          mcp_gradebook_server.py  (FastMCP over stdio)
+            Tools: get_rubric | get_rubric_reversed | get_submission
+                   submit_grade | flag_for_review
 ```
 
-The MCP server exposes 4 tools:
+### ADK 2.0 "Graph-Based" Pattern — ConsistencyAuditorAgent
 
-| Tool | Description |
-|---|---|
-| `get_rubric(assignment_id)` | Returns the full rubric criteria |
-| `get_submission(student_id, assignment_id)` | Returns submission text |
-| `submit_grade(student_id, assignment_id, scores, total, flagged)` | Writes to `data/grades.json` |
-| `flag_for_review(student_id, assignment_id, reason)` | Writes to `data/flags.json` |
+The auditor explicitly demonstrates **weaving deterministic code with adaptive AI reasoning**:
 
-## Quick Start
+| Step | Who | What |
+|---|---|---|
+| Re-grade with reversed criteria | **LLM** | Adaptive reasoning, different anchor sequence |
+| `compute_score_divergence()` | **Python** | Deterministic `abs(score_A - score_B)` per criterion |
+| Write `auditor_verdict` | **LLM** | Uses the Python-computed numbers to anchor verdict |
+| `inconsistency_detected` flag | **Python bool** | Orchestrator reads this — NOT an LLM judgment |
 
-### 1. Install dependencies
+The LLM cannot hallucinate the divergence numbers — they are computed first by Python and injected back as tool results.
 
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Set your API key
-
-```bash
-copy .env.example .env
-# then edit .env and replace your_google_api_key_here
-```
-
-### 3. Smoke-test the MCP server
-
-```bash
-python mcp_gradebook_server.py
-# Should start without errors (press Ctrl+C to stop)
-```
-
-### 4. Launch ADK Web
-
-```bash
-adk web
-```
-
-Open **http://localhost:8000** in your browser.
-
-Select `feedback_agent_pipeline` and send a message like:
-
-```
-Grade student_01's submission for assignment essay_01.
-```
-
-The pipeline will:
-1. **Grading Agent** → calls `get_rubric` + `get_submission` → outputs `<grade_output>` JSON
-2. **Feedback Coach** → reads `<grade_output>` → writes the student feedback letter
-3. **Auditor Agent** → re-grades in reverse order → outputs `<audit_output>` JSON
-
-Check `data/grades.json` and `data/flags.json` for persisted results.
-
-## Project Structure
+## File Structure
 
 ```
 Feedback-Agent/
-├── agents/                        # System prompts (Agent A, B, C)
-│   ├── grading_agent_prompt.py
-│   ├── feedback_coach_prompt.py
-│   └── auditor_agent_prompt.py
-├── content/                       # Seed data
-│   ├── rubric_essay_01.json
-│   └── submissions_essay_01.json
-├── data/                          # Runtime output (created automatically)
+├── schemas/
+│   └── grade_output.py            # Pydantic models: GradeOutput, AuditResult,
+│                                  # FeedbackInput, AuditInput, CriterionScore
+├── agents/
+│   ├── grading_agent.py           # LlmAgent + output_schema=GradeOutput + MCPToolset
+│   ├── feedback_coach.py          # LlmAgent + input_schema=FeedbackInput, no tools
+│   ├── consistency_auditor.py     # LlmAgent + MCPToolset + compute_score_divergence
+│   ├── grading_agent_prompt.py    # System prompt text (unchanged)
+│   ├── feedback_coach_prompt.py   # System prompt text (unchanged)
+│   └── auditor_agent_prompt.py    # System prompt text (unchanged)
+├── content/
+│   ├── rubric_essay_01.json       # Rubric (4 criteria × 4 levels)
+│   └── submissions_essay_01.json  # 7 sample submissions
+├── data/                          # Written at runtime by MCP server
 │   ├── grades.json
 │   └── flags.json
-├── mcp_gradebook_server.py        # MCP stdio server (subprocess)
-├── agent.py                       # ADK agent graph (root_agent)
+├── mcp_gradebook_server.py        # Real MCP stdio server (5 tools)
+├── agent.py                       # Orchestrator root_agent (AgentTool pattern)
+├── run_pipeline.py                # Batch runner — all 7 submissions
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
-## Students available for grading
+## Quick Start
 
-| student_id | Quality | Expected score |
+### 1. Install
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Set API key
+
+Create a `.env` file in the project root:
+```
+GOOGLE_API_KEY=your_actual_api_key_here
+```
+
+### 3. Interactive — ADK Web UI
+
+```bash
+adk web .
+# → open http://127.0.0.1:8000
+# → select "feedback_agent_pipeline"
+# → send: "Grade student_id=student_01 on assignment_id=essay_01"
+```
+
+### 4. Batch — all 7 submissions
+
+```bash
+# List available students
+python run_pipeline.py --list
+
+# Grade all 7 students
+python run_pipeline.py
+
+# Grade specific students
+python run_pipeline.py student_01 student_03 trap_student
+```
+
+Reports are saved to `data/run_results/<timestamp>/<student_id>.md`.
+
+## MCP Server Tools
+
+| Tool | Called by | Description |
 |---|---|---|
-| `student_01` | Strong | 14–16 |
-| `student_02` | Strong | 13–15 |
-| `student_03` | Weak | 1–4 |
-| `student_04` | Weak | 0–3 |
-| `student_05` | Borderline | 7–10 |
-| `student_06` | Borderline | 8–11 |
-| `trap_student` | Auditor trap (order-bias test) | varies |
+| `get_rubric(assignment_id)` | GradingAgent | Returns rubric (forward order) |
+| `get_rubric_reversed(assignment_id)` | ConsistencyAuditorAgent | Returns rubric (reversed order) |
+| `get_submission(student_id, assignment_id)` | GradingAgent, Auditor | Returns submission text |
+| `submit_grade(...)` | GradingAgent | Writes to `data/grades.json` |
+| `flag_for_review(...)` | GradingAgent, Orchestrator | Writes to `data/flags.json` |
+
+## Sample Submissions
+
+| student_id | Quality | Expected score | Notes |
+|---|---|---|---|
+| `student_01` | Strong | 14–16 | Should score near-perfect |
+| `student_02` | Strong | 13–15 | Sophisticated, multi-source |
+| `student_03` | Weak | 1–4 | Anecdotal, no evidence |
+| `student_04` | Weak | 0–3 | Assertions only, may be flagged |
+| `student_05` | Borderline | 7–10 | Hedged thesis |
+| `student_06` | Borderline | 8–11 | Haidt reference, enforcement problem |
+| `trap_student` | Auditor trap | varies by order | Engineered to expose halo-effect bias — key test for ConsistencyAuditorAgent |

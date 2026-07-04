@@ -118,6 +118,37 @@ def get_rubric(assignment_id: str) -> dict:
     return rubric
 
 
+# ── Tool 1b: get_rubric_reversed ────────────────────────────────────────────
+
+@mcp.tool(
+    description=(
+        "Retrieve the grading rubric for a given assignment with the criteria "
+        "list in REVERSED order. Used exclusively by the ConsistencyAuditorAgent "
+        "to re-grade the submission with a different criterion evaluation sequence, "
+        "exposing order-dependent anchor/halo-effect bias. "
+        "Do NOT call this during normal grading — use get_rubric instead."
+    )
+)
+def get_rubric_reversed(assignment_id: str) -> dict:
+    """
+    Returns the rubric with criteria reversed, for order-bias detection.
+
+    Args:
+        assignment_id: The assignment identifier, e.g. 'essay_01'.
+
+    Returns:
+        The full rubric dict with 'criteria' list reversed in place.
+        The rubric metadata (title, topic, total_points) is unchanged.
+    """
+    rubric = get_rubric(assignment_id)  # reuse validation logic
+    # Return a copy with criteria reversed — the MCP server stays stateless
+    import copy
+    rubric_copy = copy.deepcopy(rubric)
+    rubric_copy["criteria"] = list(reversed(rubric_copy["criteria"]))
+    rubric_copy["_criteria_order"] = "reversed"  # signal for transparency
+    return rubric_copy
+
+
 # ── Tool 2: get_submission ──────────────────────────────────────────────────
 
 @mcp.tool(
