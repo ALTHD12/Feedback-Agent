@@ -1,0 +1,95 @@
+%% architecture_v1 — reuse in README and video
+
+graph TD
+    %% ─────────────────────────────────
+    %% ENTRY POINT
+    %% ─────────────────────────────────
+    Instructor(["👩‍🏫 Instructor / User\n(triggers grading job)"])
+
+    %% ─────────────────────────────────
+    %% ORCHESTRATION LAYER
+    %% ─────────────────────────────────
+    Orchestrator["🔀 ADK Orchestrator\n(manages agent pipeline,\npasses outputs between agents)"]
+
+    %% ─────────────────────────────────
+    %% AGENT LAYER
+    %% ─────────────────────────────────
+    AgentA["🤖 Agent A — Grading Agent\n• Fetches rubric & submission\n• Scores 4 criteria 0–4\n• Outputs structured JSON\n  inside grade_output tags\n• Calls submit_grade()\n• Calls flag_for_review()\n  on zero scores / anomalies"]
+
+    AgentB["✍️ Agent B — Feedback Coach\n• Receives grade_output JSON\n• Rewrites each justification\n  as student-facing prose\n• Produces cohesive\n  feedback letter\n• Tone calibrated to score"]
+
+    AgentC["🔍 Agent C — Auditor Agent\n• Re-grades independently\n• Evaluates in REVERSE\n  criterion order (Pass 1)\n• Alternative-interp sweep\n  (Pass 2)\n• Compares vs original scores\n• Calls flag_for_review()\n  if delta ≥ 2 on any criterion\n• Outputs diff table + verdict"]
+
+    %% ─────────────────────────────────
+    %% MCP SERVER
+    %% ─────────────────────────────────
+    MCPServer["⚙️ MCP Server\n(Tool Dispatcher)"]
+
+    %% ─────────────────────────────────
+    %% MCP TOOLS
+    %% ─────────────────────────────────
+    ToolGetRubric["📋 get_rubric\n(assignment_id)"]
+    ToolGetSubmission["📄 get_submission\n(student_id, assignment_id)"]
+    ToolSubmitGrade["💾 submit_grade\n(student_id, scores, total, flagged)"]
+    ToolFlagReview["🚩 flag_for_review\n(student_id, reason)"]
+
+    %% ─────────────────────────────────
+    %% DATA STORE
+    %% ─────────────────────────────────
+    DataStore[("🗄️ Local Data Store\n(JSON / SQLite)\n• rubrics/\n• submissions/\n• grades/\n• flags/")]
+
+    %% ─────────────────────────────────
+    %% DOWNSTREAM OUTPUTS
+    %% ─────────────────────────────────
+    ReviewQueue["🔴 Review Queue\n(Human Reviewer)\n• Zero scores\n• Off-topic submissions\n• Suspected plagiarism\n• Score inconsistency ≥2\n• Systematic bias detected"]
+
+    GradeReport["📊 Grade Report\n• Per-criterion scores\n• Total score / 16\n• Student feedback letter\n• Audit diff table\n• Flag status"]
+
+    %% ─────────────────────────────────
+    %% FLOW — PIPELINE
+    %% ─────────────────────────────────
+    Instructor -->|"submit(student_id, assignment_id)"| Orchestrator
+    Orchestrator -->|"1 — route submission"| AgentA
+    AgentA -->|"2 — grade_output JSON"| Orchestrator
+    Orchestrator -->|"3 — forward grade_output"| AgentB
+    AgentB -->|"4 — feedback letter"| Orchestrator
+    Orchestrator -->|"5 — forward grade_output + submission"| AgentC
+    AgentC -->|"6 — audit_output JSON"| Orchestrator
+    Orchestrator -->|"7 — assemble"| GradeReport
+
+    %% ─────────────────────────────────
+    %% FLOW — MCP TOOL CALLS
+    %% ─────────────────────────────────
+    AgentA -->|"MCP call"| MCPServer
+    AgentC -->|"MCP call"| MCPServer
+
+    MCPServer --> ToolGetRubric
+    MCPServer --> ToolGetSubmission
+    MCPServer --> ToolSubmitGrade
+    MCPServer --> ToolFlagReview
+
+    ToolGetRubric <-->|"read"| DataStore
+    ToolGetSubmission <-->|"read"| DataStore
+    ToolSubmitGrade <-->|"write"| DataStore
+    ToolFlagReview <-->|"write"| DataStore
+
+    %% ─────────────────────────────────
+    %% FLOW — FLAGGING PATH
+    %% ─────────────────────────────────
+    ToolFlagReview -->|"enqueue flag"| ReviewQueue
+    ReviewQueue -->|"human review decision"| GradeReport
+
+    %% ─────────────────────────────────
+    %% STYLING
+    %% ─────────────────────────────────
+    classDef agent fill:#1e3a5f,stroke:#4a9eff,color:#e8f4fd,rx:8
+    classDef tool fill:#1a3a2a,stroke:#4aff91,color:#d4f5e2,rx:4
+    classDef infra fill:#2d1a3a,stroke:#a855f7,color:#ead4f5,rx:4
+    classDef output fill:#3a2a0a,stroke:#f59e0b,color:#fef3c7,rx:8
+    classDef person fill:#3a1a1a,stroke:#ef4444,color:#fee2e2,rx:12
+
+    class AgentA,AgentB,AgentC agent
+    class ToolGetRubric,ToolGetSubmission,ToolSubmitGrade,ToolFlagReview tool
+    class MCPServer,DataStore,Orchestrator infra
+    class GradeReport,ReviewQueue output
+    class Instructor person
