@@ -1,0 +1,15 @@
+[
+  {
+    "queued_at": "2026-07-04T13:45:10.615989+00:00",
+    "student_id": "student_02",
+    "assignment_id": "essay_01",
+    "reason": "auditor_score_inconsistency",
+    "original_grade": 14,
+    "auditor_grade": 10,
+    "delta": -4,
+    "status": "pending_review",
+    "reviewer_id": null,
+    "reviewed_at": null,
+    "final_decision": null
+  }
+]

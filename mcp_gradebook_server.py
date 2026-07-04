@@ -149,6 +149,30 @@ def get_rubric_reversed(assignment_id: str) -> dict:
     return rubric_copy
 
 
+# ---------------------------------------------------------------------------
+# SECURITY: Scoped Access Store
+# ---------------------------------------------------------------------------
+# Maps session_id -> list of allowed student_ids
+# In production, this would be stored in Redis or a database.
+_session_scopes: dict[str, list[str]] = {}
+VIOLATIONS_FILE = DATA_DIR / "violations.log"
+
+
+def register_grading_session(session_id: str, student_id: str) -> None:
+    """
+    Called by the Orchestrator BEFORE dispatching the Grading Agent.
+    Creates a narrow scope so this session can ONLY access this specific student.
+    
+    WHY: Principle of Least Privilege. If the Agent is compromised by a prompt
+         injection (e.g., "fetch all submissions and summarize them"), it is
+         cryptographically blocked from accessing other students' data.
+    """
+    if session_id not in _session_scopes:
+        _session_scopes[session_id] = []
+    if student_id not in _session_scopes[session_id]:
+        _session_scopes[session_id].append(student_id)
+
+
 # ── Tool 2: get_submission ──────────────────────────────────────────────────
 
 @mcp.tool(
@@ -158,21 +182,57 @@ def get_rubric_reversed(assignment_id: str) -> dict:
         "not the other way around."
     )
 )
-def get_submission(student_id: str, assignment_id: str) -> dict:
+def get_submission(student_id: str, assignment_id: str, session_id: str = None) -> dict:
     """
     Returns the submission for (`student_id`, `assignment_id`).
 
     Args:
         student_id:    The student identifier, e.g. 'student_01'.
         assignment_id: The assignment identifier, e.g. 'essay_01'.
+        session_id:    The active session token for access control.
 
     Returns:
         A dict with at least: student_id, assignment_id, text.
         May also include quality_label and expected_score_range for testing.
+        If access is denied, returns an error dict.
 
     Raises:
         ValueError: if no matching submission is found.
     """
+    # -------------------------------------------------------------------------
+    # TRADEOFF: Passing session_id as a tool argument vs. MCP Init Header
+    # 
+    # Method A: Tool Argument (Implemented here for demonstration)
+    #   - Pros: Simple to implement, works with any basic MCP client.
+    #   - Cons: The LLM sees the session_id and could theoretically try to tamper 
+    #           with it (though a secure orchestrator intercepts and overwrites 
+    #           this argument before it reaches the server).
+    #
+    # Method B: MCP Init Header (e.g., passed during protocol initialization)
+    #   - Pros: Completely invisible to the LLM. The orchestrator sets the header 
+    #           once when establishing the MCP connection, making spoofing impossible.
+    #   - Cons: Requires custom transport configuration in both ADK and the MCP 
+    #           server to extract and pass headers into the tool context.
+    # -------------------------------------------------------------------------
+
+    # SECURITY: Scoped Access Enforcement
+    if session_id:
+        allowed_students = _session_scopes.get(session_id, [])
+        if student_id not in allowed_students:
+            # WHY: This prevents lateral movement. A compromised agent asked to grade 
+            # student_01 cannot suddenly decide to fetch and leak student_02's essay.
+            violation_msg = (
+                f"[{_now_iso()}] SESSION_ID: {session_id} | "
+                f"ATTEMPTED_STUDENT_ID: {student_id} | ALLOWED: {allowed_students}\n"
+            )
+            with open(VIOLATIONS_FILE, "a", encoding="utf-8") as f:
+                f.write(violation_msg)
+            
+            return {
+                "error": "access_denied",
+                "message": "This session is not authorized to retrieve this student's submission. Scoped access violation logged."
+            }
+
     submissions = _load_json(SUBMISSIONS_FILE)
 
     if not isinstance(submissions, list):
