@@ -255,6 +255,25 @@ def get_submission(student_id: str, assignment_id: str, session_id: str = None) 
 
     submission = matches[0]
 
+    # SECURITY: Prompt Injection Guard
+    try:
+        from demo_injection import check_injection
+        injection_res = check_injection(submission["text"])
+        if not injection_res["clean"]:
+            # Auto-flag the submission in the gradebook
+            flag_for_review(student_id, assignment_id, reason="suspected_plagiarism")
+            return {
+                "student_id": submission["student_id"],
+                "assignment_id": submission["assignment_id"],
+                "text": submission["text"],
+                "security_alert": "PROMPT_INJECTION_DETECTED",
+                "flagged": True,
+                "flag_reasons": ["injection_attempt"]
+            }
+    except Exception as e:
+        # Gracefully handle import errors during tests
+        pass
+
     # Return only the fields the agent needs; strip internal test metadata
     return {
         "student_id": submission["student_id"],
@@ -403,6 +422,36 @@ def flag_for_review(
     # Append (allow multiple flags per submission from different agents)
     flags.append(record)
     _save_json(FLAGS_FILE, flags)
+
+    # Write to human review queue (Human-in-the-loop gate integration)
+    try:
+        review_queue_path = DATA_DIR / "review_queue.json"
+        queue_data = []
+        if review_queue_path.exists():
+            queue_data = _load_json(review_queue_path)
+            if not isinstance(queue_data, list):
+                queue_data = []
+        
+        review_record = {
+            "queued_at": _now_iso(),
+            "student_id": student_id,
+            "assignment_id": assignment_id,
+            "reason": reason,
+            "original_grade": None,
+            "auditor_grade": None,
+            "delta": None,
+            "status": "pending_review",
+            "reviewer_id": None,
+            "reviewed_at": None,
+            "final_decision": None
+        }
+        
+        # Check if already in queue to prevent duplicates
+        if not any(q.get("student_id") == student_id and q.get("reason") == reason for q in queue_data):
+            queue_data.append(review_record)
+            _save_json(review_queue_path, queue_data)
+    except Exception:
+        pass
 
     return {"status": "flagged", "record": record}
 

@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.*
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local runs and test outputs
+results/
+data/run_results/
+data/grades.json
+data/flags.json
+data/review_queue.json
+data/violations.log

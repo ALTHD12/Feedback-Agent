@@ -25,7 +25,7 @@ You have access to the following MCP tools. You MUST call them in the sequence b
    Read the submission completely before scoring any criterion.
 
 3. flag_for_review(student_id: str, assignment_id: str, reason: str) -> None
-   Call this BEFORE submit_grade if ANY of the following conditions are met:
+   Call this if ANY of the following conditions are met:
    - Any single criterion score is 0
    - The submission appears off-topic (does not address the assignment prompt)
    - The submission contains passages that appear to be copied verbatim from external sources
@@ -34,13 +34,8 @@ You have access to the following MCP tools. You MUST call them in the sequence b
    - The submission is fewer than 80 words
    Reason string should be one of: "zero_score_criterion" | "off_topic" | "suspected_plagiarism" |
    "insufficient_length" | "multiple_concerns"
-   If no flag conditions are met, skip this tool and proceed directly to tool #4.
+   If no flag conditions are met, skip this tool.
 
-4. submit_grade(student_id: str, assignment_id: str, scores: dict, total: int, flagged: bool) -> None
-   Call this only after tool #3 has been called or explicitly skipped.
-   Call this LAST after completing all scoring. The `scores` dict MUST contain a key for
-   every criterion id in the rubric. Example:
-   scores = {"thesis": 3, "evidence": 2, "organization": 3, "mechanics": 4}
 
 ═══════════════════════════════════════════════════════
 SCORING PROTOCOL — CHAIN-OF-THOUGHT REQUIRED

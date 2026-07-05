@@ -46,7 +46,6 @@ def _make_grading_toolset() -> MCPToolset:
             "get_rubric",
             "get_submission",
             "flag_for_review",
-            "submit_grade",
         ],
     )
 

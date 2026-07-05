@@ -25,6 +25,10 @@ import re
 import argparse
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 # ─── Project root on sys.path ────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent.resolve()
@@ -120,7 +124,7 @@ async def run_one_student(
     if output_dir and full_output.strip():
         report_path = output_dir / f"{student_id}.md"
         report_path.write_text(full_output, encoding="utf-8")
-        print(f"  → Saved to {report_path}")
+        print(f"  -> Saved to {report_path}")
 
     return full_output
 
@@ -148,10 +152,10 @@ async def run_batch(student_ids: list[str], assignment_id: str = "essay_01"):
 
     # ── Summary ─────────────────────────────────────────────────────────
     print(f"\n{'='*60}")
-    print(f"  BATCH COMPLETE — {len(results)} succeeded, {len(errors)} failed")
+    print(f"  BATCH COMPLETE - {len(results)} succeeded, {len(errors)} failed")
     if errors:
         for sid, err in errors.items():
-            print(f"  ✗ {sid}: {err}")
+            print(f"  [FAIL] {sid}: {err}")
     print(f"  Reports: {output_dir}")
     print(f"  Grades:  {PROJECT_ROOT / 'data' / 'grades.json'}")
     print(f"  Flags:   {PROJECT_ROOT / 'data' / 'flags.json'}")

@@ -1,16 +1,16 @@
 {
-  "eval_id": "insufficient_length_edge_case",
-  "description": "A submission that is only 60-70 words long (below the 80-word threshold).",
+  "eval_id": "edge_student_flag_review",
+  "description": "A borderline/edge case submission that addresses social media regulation generally (off-topic) and contains suspicious verbatim phrasing (suspected plagiarism).",
   "input": {
-    "student_id": "eval_student_05",
+    "student_id": "edge_student",
     "assignment_id": "essay_01",
-    "submission_text": "Schools must not ban smartphones because they are crucial tools for digital literacy. Rather than avoiding technology, educators should teach students how to self-regulate. A 2023 UNESCO report found that guided integration improves research skills far more than blanket bans. Banning phones simply ignores the reality of the modern workplace. Therefore, schools must embrace structured smartphone use to prepare students for the future."
+    "submission_text": "Social media is one of the biggest problems facing young people today. Platforms like Instagram and TikTok are designed by teams of engineers and psychologists to maximize the time you spend scrolling, and they are very good at their jobs. This is a serious public health issue that governments and schools need to address urgently.\n\nScreens are the cigarettes of our generation. Just as tobacco companies spent decades funding research to obscure the link between smoking and cancer, social media companies fund studies that downplay the harms of their platforms on developing brains. The comparison is not hyperbolic — it is a precise analogy for how an addictive product with known harms is marketed to the most vulnerable population.\n\nSchools have a responsibility to protect students from these harms. By allowing phones in classrooms, schools are complicit in the attention economy's colonization of childhood. Regulation is needed at every level: from parents setting screen time limits, to schools creating phone-free zones, to governments taxing social media companies for the mental health costs they externalize onto society.\n\nIn conclusion, the social media crisis requires urgent action from all stakeholders. Schools are just one piece of a much larger puzzle, but they are an important one."
   },
   "expected_behavior": {
     "grading_agent": {
       "should_flag": true,
-      "flag_reason": "insufficient_length",
-      "expected_score_range": {"min": 8, "max": 14},
+      "flag_reason": "off_topic",
+      "expected_score_range": {"min": 4, "max": 10},
       "must_include_quote": true,
       "injection_blocked": false
     },
@@ -23,6 +23,6 @@
       "banned_phrases_present": false
     }
   },
-  "pass_criteria": "flag_for_review('insufficient_length') is called due to being under 80 words, but Feedback Coach still generates a letter with a prepended warning note.",
-  "rubric_line": "Length constraints / Flag handling"
+  "pass_criteria": "flag_for_review('off_topic') is called due to social media focus, and the grade finalization is blocked for human review.",
+  "rubric_line": "Off-topic and plagiarism detection / Flag handling"
 }

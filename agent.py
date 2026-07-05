@@ -47,6 +47,9 @@ Why deterministic flagging:
 
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -75,7 +78,7 @@ def _make_flag_toolset() -> MCPToolset:
                 args=[_SERVER_SCRIPT],
             )
         ),
-        tool_filter=["flag_for_review"],
+        tool_filter=["flag_for_review", "submit_grade"],
     )
 
 
@@ -83,7 +86,7 @@ def _make_flag_toolset() -> MCPToolset:
 
 ORCHESTRATOR_PROMPT = """
 You are the Orchestrator of a multi-agent academic assessment pipeline.
-You coordinate three specialist agents and make the final flagging decision.
+You coordinate three specialist agents and make the final flagging and grade submission decisions.
 
 ═══════════════════════════════════════════════════════
 AVAILABLE TOOLS
@@ -108,9 +111,15 @@ AVAILABLE TOOLS
 
 4. flag_for_review(student_id, assignment_id, reason)
    → Flags the submission for human review in the gradebook.
-   Call this ONLY IF the AuditResult from step 3 contains
-   "inconsistency_detected": true.
+   Call this if the AuditResult from step 3 contains
+   "inconsistency_detected": true, OR if the initial GradingAgent flagged the work.
    Use reason="score_inconsistency" for divergence flags.
+
+5. submit_grade(student_id, assignment_id, scores, total, flagged)
+   → Persists the final grade to the database.
+   ONLY call this if "inconsistency_detected" is FALSE. If there is an inconsistency,
+   do NOT call this tool (it is held/routed to human review).
+   Extract scores mapping (criterion_id -> score) and total from GradeOutput.
 
 ═══════════════════════════════════════════════════════
 EXECUTION PROTOCOL
@@ -123,6 +132,7 @@ STEP 1: Call grade_submission(student_id, assignment_id)
     - grade_output_json  → save the full JSON string for steps 2 and 3
     - total_score        → include in final report
     - flagged            → if True, note the flag_reasons
+    - criteria_scores    → extract scores dictionary mapping each criterion_id to its integer score
 
 STEP 2: Call generate_feedback(grade_output_json=<the full JSON from step 1>)
   EXCEPTION: If the GradeOutput.flag_reasons contains "suspected_plagiarism"
@@ -140,8 +150,13 @@ STEP 3: Call audit_consistency(
     - flagged_criteria (list)
     - auditor_verdict (string)
 
-STEP 4: If inconsistency_detected=true →
+STEP 4: Determine finalization and flagging:
+  - If inconsistency_detected=true:
     Call flag_for_review(student_id, assignment_id, reason="score_inconsistency")
+    DO NOT call submit_grade (holds the grade for human review instead of auto-finalizing).
+  - If inconsistency_detected=false:
+    Call submit_grade(student_id, assignment_id, scores, total_score, flagged)
+    to persist the grade.
 
 ═══════════════════════════════════════════════════════
 FINAL REPORT FORMAT
@@ -165,7 +180,8 @@ Max delta across criteria: [max_abs_delta] point(s)
 Inconsistency detected: [Yes/No]
 [if Yes] Flagged criteria: [list]
 Auditor verdict: [auditor_verdict]
-[if inconsistency_detected] ⚠️ Submission has been flagged for human review.
+[if inconsistency_detected] ⚠️ Submission has been held and flagged for human review.
+[if not inconsistency_detected] ✅ Grade has been finalized and submitted to the gradebook.
 
 ---
 
